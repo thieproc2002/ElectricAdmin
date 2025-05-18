@@ -19,7 +19,9 @@ export class ProductComponent implements OnInit {
   products!: Product[];
   productsLength!: number;
   columns: string[] = ['image', 'productId', 'name', 'price', 'discount', 'category','quantity', 'status' ,'enteredDate', 'view', 'delete'];
-
+searchProductId: string = '';
+searchName: string = '';
+searchPhone: string = '';
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -34,6 +36,7 @@ export class ProductComponent implements OnInit {
     this.productService.getAll().subscribe(data => {
       this.products = data as Product[];
       this.listData = new MatTableDataSource(this.products);
+      this.productsLength = this.products.length;
       this.listData.sort = this.sort;
       this.listData.paginator = this.paginator;
     }, error => {
@@ -60,10 +63,28 @@ export class ProductComponent implements OnInit {
     })
   }
 
-  search(event: any) {
-    const fValue = (event.target as HTMLInputElement).value;
-    this.listData.filter = fValue.trim().trim().toLowerCase();
-
+  search() {
+      this.productService.getAll().subscribe(data => {
+          this.products = data as Product[];
+          
+          // Lọc theo từng trường tìm kiếm
+          this.products = this.products.filter(products => {
+              const matchesProductId = this.searchProductId === '' || products.productId === Number(this.searchProductId);
+              const matchesName = this.searchName === '' || products.name.toLowerCase().includes(this.searchName.toLowerCase());
+          
+              
+              // const orderDateString = new Date(order.orderDate).toISOString().slice(0, 10); // Chuyển về yyyy-MM-dd
+              // const matchesOrderDate = this.searchOrderDate === '' || orderDateString === this.searchOrderDate;
+  
+              return matchesProductId && matchesName ;
+          });
+  
+          // Cập nhật bảng
+          this.listData = new MatTableDataSource(this.products);
+          this.productsLength = this.products.length;
+          this.listData.sort = this.sort;
+          this.listData.paginator = this.paginator;
+      });
   }
 
   finish() {
